@@ -93,14 +93,22 @@ public class JSFTCommands {
         }
     }
 
-    public void foreach(final String var, final Object[] list) {
-        foreach(var, Arrays.asList(list));
+    public void foreach(final String variable, final Object list) {
+        if (list != null && variable != null) {
+            if (list instanceof Iterable) {
+                foreachIterable(variable, (Iterable<?>) list);
+            } else if (list.getClass().isArray()) {
+                foreachIterable(variable, Arrays.asList((Object []) list));
+            } else {
+                foreachIterable(variable, List.of(list));
+            }
+        }
     }
 
     /**
      * <p> This command iterates over the given List and sets given
      */
-    public void foreach(final String var, final Iterable<?> list) {
+    private void foreachIterable(final String variable, final Iterable<?> list) {
         final FacesContext ctx = FacesContext.getCurrentInstance();
         if (isComplete(ctx)) {
             return;
@@ -115,7 +123,7 @@ public class JSFTCommands {
         if (list != null) {
             for (Object item : list) {
                 // Set the item in the request scope under the given key
-                reqMap.put(var, item);
+                reqMap.put(variable, item);
 
                 // Invoke all the child commands
                 final List<Command> childCommands = command.getChildCommands();
