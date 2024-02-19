@@ -57,10 +57,9 @@ import java.util.Properties;
  *  @author  Ken Paulsen (kenapaulsen@gmail.com)
  */
 public final class Util {
-    /**
-     * <p> Application scope attribute name for storing custom <code>ClassLoaders</code>.</p>
-     */
+    // Application scope attribute name for storing custom ClassLoaders
     private static final String CLASSLOADER_CACHE   =        "__jsft_ClassLoaders";
+
     private static final String AMPERSAND           =        "&amp;";
     private static final String LESS_THAN           =        "&lt;";
     private static final String GREATER_THAN        =        "&gt;";
@@ -70,7 +69,8 @@ public final class Util {
     /**
      * <p> This is the context-param that specifies the JSFTemplating custom <code>ClassLoader</code> to use.</p>
      */
-    public static final String        CUSTOM_CLASS_LOADER = "com.sun.jsft.CLASSLOADER";
+    public static final String CUSTOM_CLASS_LOADER = "com.sun.jsft.CLASSLOADER";
+
     /**
      * <p> Prevent direct instantiation.</p>
      */
@@ -91,11 +91,8 @@ public final class Util {
         if ((loader == null) && (obj != null)) {
             loader = obj.getClass().getClassLoader();
         }
-
         // Wrap with custom ClassLoader if specified
-        loader = getCustomClassLoader(loader);
-
-        return loader;
+        return getCustomClassLoader(loader);
     }
 // NOTE: Maybe in addition to getClassLoader, we should have Iterator<ClassLoader> getClassLoaders() for cases where we want to attempt multiple ClassLoaders
 
@@ -129,7 +126,7 @@ public final class Util {
                 return loader;
             }
             try {
-                // Intantiate the custom classloader w/ "loader" as its parent
+                // Instantiate the custom classloader w/ "loader" as its parent
                 Class<?> cls = Class.forName(clsName, true, parent);
                 loader = (ClassLoader) cls.getConstructor(
                         new Class[] {ClassLoader.class}).newInstance(parent);
@@ -159,7 +156,7 @@ public final class Util {
         // Cache for next time
         classLoaderCache.put(parent, loader);
 
-        // Return the ClassLoader (may be the same one passed in)
+        // Return the ClassLoader (it may be the same as passed in)
         return loader;
     }
 
@@ -273,9 +270,9 @@ public final class Util {
      *     <code>params</code>. This method does not throw any exceptions. Instead it will return
      *    <code>null</code> if unable to locate the method.</p>
      */
-    public static Method getMethod(Class<?> cls, String name, Class<?>... prms) {
+    public static Method getMethod(final Class<?> cls, final String name, final Class<?>... params) {
         try {
-            return cls.getMethod(name, prms);
+            return cls.getMethod(name, params);
         } catch (final NoSuchMethodException | SecurityException ex) {
             // Do nothing, we're eating the exception
             return null;
@@ -286,7 +283,7 @@ public final class Util {
      * <p> This method converts the given Map into a Properties Map (if it is already one, then it simply returns the
      *     given Map).</p>
      */
-    public static Properties mapToProperties(Map<?, ?> map) {
+    public static Properties mapToProperties(final Map<?, ?> map) {
         if ((map == null) || (map instanceof Properties)) {
             return (Properties) map;
         }
@@ -359,89 +356,86 @@ public final class Util {
      *     <li>&amp;#39; to &#39;</li>
      *     </ul>
      */
-    public static String unHtmlEscape(String str) {
+    public static String unHtmlEscape(final String str) {
         // Ensure we have a string...
         if (str == null) {
             return null;
         }
 
         // Store a lower-case version to avoid worrying about case
-        char[] lower = str.toLowerCase().toCharArray();
+        final char[] lower = str.toLowerCase().toCharArray();
         // Also preserve the original case to avoid changing values
-        char[] orig = str.toCharArray();
+        final char[] orig = str.toCharArray();
 
         // Variables for indexes
-        int len = lower.length;
-        int stop = len - 3; // Smallest supported entity is 4 chars...
+        final int len = lower.length;
+        final int stop = len - 3; // Smallest supported entity is 4 chars...
         char ch, next;
         int idx;
 
         // Loop through chars and create the new string w/ converted entities
-        final StringBuilder buf = new StringBuilder("");
+        final StringBuilder buf = new StringBuilder();
         for (idx = 0; idx<stop; idx++) {
             ch = orig[idx];
-            switch (ch) {
-                case '&':
-                    // get char after & (don't check bounds, 3 extra for sure)
-                    next = lower[idx + 1];
-                    if (next == 'a') {
-                        // Maybe AMPERSAND entity
-                        if (((idx + 4) < len) && new String(lower, idx, 5).equals(AMPERSAND)) {
-                            // Yes, &amp;!
-                            buf.append('&');
-                            idx += 4;
-                        } else {
-                            // Unsupported entity, or plain '&' character
-                            buf.append(ch);
-                        }
-                    } else if (next =='l') {
-                        // Maybe LESS_THAN entity
-                        if (((idx + 3) < len) && new String(lower, idx, 4).equals(LESS_THAN)) {
-                            // Yes, &lt;!
-                            buf.append('<');
-                            idx += 3;
-                        } else {
-                            // Unsupported entity, or plain '&' character
-                            buf.append(ch);
-                        }
-                    } else if (next == 'g') {
-                        // Maybe GREATER_THAN entity
-                        if (((idx + 3) < len) && new String(lower, idx, 4).equals(GREATER_THAN)) {
-                            // Yes, &gt;!
-                            buf.append('>');
-                            idx += 3;
-                        } else {
-                            // Unsupported entity, or plain '&' character
-                            buf.append(ch);
-                        }
-                    } else if (next == 'q') {
-                        // Maybe DOUBLE_QUOTE entity
-                        if (((idx + 5) < len) && new String(lower, idx, 6).equals(DOUBLE_QUOTE)) {
-                            // Yes, &quot;!
-                            buf.append('"');
-                            idx += 5;
-                        } else {
-                            // Unsupported entity, or plain '&' character
-                            buf.append(ch);
-                        }
-                    } else if (next == '#') {
-                        // Maybe SINGLE_QUOTE entity
-                        if (((idx + 4) < len) && new String(lower, idx, 5).equals(SINGLE_QUOTE)) {
-                            // Yes, &#39;!
-                            buf.append('\'');
-                            idx += 4;
-                        } else {
-                            // Unsupported entity, or plain '&' character
-                            buf.append(ch);
-                        }
+            if (ch == '&') {
+                // get char after & (don't check bounds, 3 extra for sure)
+                next = lower[idx + 1];
+                if (next == 'a') {
+                    // Maybe AMPERSAND entity
+                    if (((idx + 4) < len) && new String(lower, idx, 5).equals(AMPERSAND)) {
+                        // Yes, &amp;!
+                        buf.append('&');
+                        idx += 4;
                     } else {
                         // Unsupported entity, or plain '&' character
                         buf.append(ch);
                     }
-                    break;
-                default:
+                } else if (next == 'l') {
+                    // Maybe LESS_THAN entity
+                    if (((idx + 3) < len) && new String(lower, idx, 4).equals(LESS_THAN)) {
+                        // Yes, &lt;!
+                        buf.append('<');
+                        idx += 3;
+                    } else {
+                        // Unsupported entity, or plain '&' character
+                        buf.append(ch);
+                    }
+                } else if (next == 'g') {
+                    // Maybe GREATER_THAN entity
+                    if (((idx + 3) < len) && new String(lower, idx, 4).equals(GREATER_THAN)) {
+                        // Yes, &gt;!
+                        buf.append('>');
+                        idx += 3;
+                    } else {
+                        // Unsupported entity, or plain '&' character
+                        buf.append(ch);
+                    }
+                } else if (next == 'q') {
+                    // Maybe DOUBLE_QUOTE entity
+                    if (((idx + 5) < len) && new String(lower, idx, 6).equals(DOUBLE_QUOTE)) {
+                        // Yes, &quot;!
+                        buf.append('"');
+                        idx += 5;
+                    } else {
+                        // Unsupported entity, or plain '&' character
+                        buf.append(ch);
+                    }
+                } else if (next == '#') {
+                    // Maybe SINGLE_QUOTE entity
+                    if (((idx + 4) < len) && new String(lower, idx, 5).equals(SINGLE_QUOTE)) {
+                        // Yes, &#39;!
+                        buf.append('\'');
+                        idx += 4;
+                    } else {
+                        // Unsupported entity, or plain '&' character
+                        buf.append(ch);
+                    }
+                } else {
+                    // Unsupported entity, or plain '&' character
                     buf.append(ch);
-                    break;
+                }
+            } else {
+                buf.append(ch);
             }
         }
 
@@ -454,24 +448,23 @@ public final class Util {
         return buf.toString();
     }
 
-    /**
-     * <p> This method strips leading delimeter. </p>
-     */
-    protected static String stripLeadingDelimeter(String str, char ch) {
-        if(str == null || str.equals("")) {
+    /*
+     * <p> This method strips leading delimiter. </p>
+    protected static String stripLeadingDelimiter(final String str, final char ch) {
+        if (str == null || str.isEmpty()) {
             return str;
         }
         int j = 0;
         char[] strArr = str.toCharArray();
-        for(int i=0; i < strArr.length; i++) {
+        for (int i=0; i < strArr.length; i++) {
             j=i;
             if(strArr[i] != ch) {
                 break;
             }
         }
         return str.substring(j);
-
     }
+     */
 
     /**
      * Closes an InputStream if it is non-null, throwing away any Exception that may occur

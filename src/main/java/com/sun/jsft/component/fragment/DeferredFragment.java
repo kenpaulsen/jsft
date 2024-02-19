@@ -56,8 +56,37 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import lombok.Getter;
+import lombok.Setter;
 
 public class DeferredFragment extends UIComponentBase {
+    /**
+     * <p> The component family.</p>
+     */
+    public static final String FAMILY        =   DeferredFragment.class.getName();
+
+    /**
+     * <p> The facet id for this component, also used as the placeholder HTML id (to avoid a naming conflict).</p>
+     */
+    private transient String facetKey = null;
+
+    /**
+     * <p> The number of dependencies that need to be complete before this <code>DeferredFragment</code>
+     *     can be rendered.  It is initialized to a positive value (1) so that {@link #isReady()} will return
+     *     <code>false</code> -- important since the dependencies have not yet been counted.</p>
+     */
+    @Getter @Setter
+    private int dependencyCount = 1;
+
+    @Getter @Setter
+    private String placeHolderId = "";
+
+
+    /**
+     * <p> This <code>List</code> will hold the list of listeners interested in being notified with this
+     *     <code>DeferredFragment</code> is ready to be rendered.</p>
+     */
+    private final List<ComponentSystemEventListener> listeners = new ArrayList<>(2);
 
     /**
      * <p> Default constructor.</p>
@@ -98,37 +127,9 @@ public class DeferredFragment extends UIComponentBase {
      *     fragment depends on are complete.  This method is not intended to
      *     be used to poll this dependency for completion, you should instead
      *     register for the ready event that it fires.</p>
+     */
     private boolean isReady() {
-        return (dependencyCount == 0);
-    }
-     */
-
-    /**
-     * <p> This method gets the id of the "place-holder" component for this <code>DeferredFragment</code>.</p>
-     */
-    public String getPlaceHolderId() {
-        return placeHolderId;
-    }
-
-    /**
-     * <p> This method sets the id of the "place-holder" component for this <code>DeferredFragment</code>.</p>
-     */
-    public void setPlaceHolderId(String id) {
-        placeHolderId = id;
-    }
-
-    /**
-     * <p> This method returns the number of dependencies this DeferredFragment is waiting for.</p>
-     */
-    public int getDependencyCount() {
-        return dependencyCount;
-    }
-
-    /**
-     * <p> This method sets the number of dependencies this <code>DeferredFragment</code> must wait for.</p>
-     */
-    public void setDependencyCount(int count) {
-        dependencyCount = count;
+        return dependencyCount == 0;
     }
 
     /**
@@ -146,7 +147,6 @@ public class DeferredFragment extends UIComponentBase {
      */
     protected void fireFragmentReadyEvent() {
         ComponentSystemEvent event = new FragmentReadyEvent(this);
-//System.out.println("listeners" + listeners);
         for (ComponentSystemEventListener listener : listeners) {
             listener.processEvent(event);
         }
@@ -157,6 +157,8 @@ public class DeferredFragment extends UIComponentBase {
      * <p> Listener used to handle DependencyEvents.</p>
      */
     public static class DeferredFragmentDependencyListener implements SystemEventListener {
+        // A reference to the DeferredFragment
+        private final DeferredFragment df;
 
         /**
          * <p> Default Constructor.</p>
@@ -170,12 +172,11 @@ public class DeferredFragment extends UIComponentBase {
          * <p> The event passed in will be a {@link DependencyEvent}.</p>
          */
         public void processEvent(SystemEvent event) throws AbortProcessingException {
-//System.out.println("DeferredFragmentDependencyListener.processEvent()!");
             //Dependency dependency = (Dependency) event.getSource();
             //String eventType = ((DependencyEvent) event).getType();
-            int count = 0;
+            final int count;
             synchronized (df) {
-                // Synch to ensure we don't change it during this time.
+                // Sync to ensure we don't change it during this time.
                 count = df.getDependencyCount() - 1;
                 df.setDependencyCount(count);
             }
@@ -189,9 +190,6 @@ public class DeferredFragment extends UIComponentBase {
             // We only dispatch this correctly... this method is not needed.
             return true;
         }
-
-        // A reference to the DeferredFragment
-        private DeferredFragment df = null;
     }
 
     /**
@@ -248,7 +246,7 @@ public class DeferredFragment extends UIComponentBase {
             UIViewRoot viewRoot = ctx.getViewRoot();
             Map<String, UIComponent> facetMap = viewRoot.getFacets();
 
-            // Create a place holder...
+            // Create a placeholder...
             String key = comp.getFacetKey(ctx);
             UIComponent placeHolder = new UIOutput();
             placeHolder.getAttributes().put(
@@ -284,34 +282,4 @@ public class DeferredFragment extends UIComponentBase {
 
         private boolean done = false;
     }
-
-    /**
-     * <p> The component family.</p>
-     */
-    public static final String FAMILY        =   DeferredFragment.class.getName();
-
-
-    /**
-     * <p> The number of dependencies that need to be complete before this <code>DeferredFragment</code>
-     *     can be rendered.  It is initialized to a postiive value (1) so that {@link #isReady()} will return
-     *     <code>false</code> -- important since the dependencies have not yet been counted.</p>
-     */
-    private int dependencyCount = 1;
-
-    /**
-     * <p> The id of the placeholder for this component so we can find it later.</p>
-     */
-    private String placeHolderId = "";
-
-    /**
-     * <p> The facet id for this component, also used as the placeholder HTML id (to avoid a naming conflict).</p>
-     */
-    private transient String facetKey = null;
-
-    /**
-     * <p> This <code>List</code> will hold the list of listeners interested in being notified with this
-     *     <code>DeferredFragment</code> is ready to be rendered.</p>
-     */
-    private List<ComponentSystemEventListener> listeners =
-            new ArrayList<ComponentSystemEventListener>(2);
 }

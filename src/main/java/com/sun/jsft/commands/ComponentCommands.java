@@ -56,6 +56,8 @@ import jakarta.inject.Named;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -67,21 +69,8 @@ import lombok.extern.slf4j.Slf4j;
 @Named("jsftComp")
 @ApplicationScoped
 public class ComponentCommands {
+    @Getter @Setter
     private static ComponentCommands instance = new ComponentCommands();
-
-    /**
-     * <p> When these utilities are used via code, this method can be used to obtain an instance.</p>
-     */
-    public static ComponentCommands getInstance() {
-        return instance;
-    }
-
-    /**
-     * <p> For testing purposes, this setInstance() may be used to set a "mock" instance.</p>
-     */
-    public static void setInstance(final ComponentCommands newinst) {
-        instance = newinst;
-    }
 
     /**
      * <p> This inserts <code>newComp</code> before the given <code>existingComp</code> component. If
@@ -137,7 +126,7 @@ public class ComponentCommands {
         // Manfred suggested not doing this, instead I am skipping repeated
         // event calls to PostAddToView
 // FIXME: Try removing this for Mojarra... not having luck w/o doing this in MyFaces
-final boolean inview = parent.isInView();
+final boolean inView = parent.isInView();
 parent.setInView(false);
 
         // Add component to the end to increase the component list size
@@ -156,7 +145,7 @@ parent.setInView(false);
 
         // Loop through children backwards, shifting each making room for insert
         UIComponent currComp;
-        String insertId = existingComp.getId();
+        final String insertId = existingComp.getId();
         while (currIdx != 0) {
             // Remove component w/o shrinking list, returns comp to shift
             currComp = children.set(currIdx-1, tempComp);
@@ -185,14 +174,14 @@ parent.setInView(false);
 
         // Insert newComp
         if (newComp.getParent() != null) {
-            // Set it to tempComp so it will be null, we need to re-add
+            // Set it to tempComp, so it will be null, we need to re-add
             // w/ setInView restored
             children.set(currIdx, tempComp);
         }
 
         // Restore the "inView" flag
 // FIXME: Try removing this for Mojarra... not having luck w/o doing this in MyFaces
-parent.setInView(inview);
+parent.setInView(inView);
 
         // Add the component in the correct location...
         children.set(currIdx, newComp);
@@ -357,13 +346,12 @@ parent.setInView(inview);
     }
 
     /**
-     * <p> Searches for a <coode>UIComponent</code> with the specified component id, starting from the
-     *     <code>UIViewRoot</code>. It will search all children (depth first) for the 1st matching id. If not found,
-     *     return <code>null</code>.</p>
+     * <p> Searches for a {@code UIComponent} with the specified component id, starting from the {@code UIViewRoot}.
+     *     It will search all children (depth first) for the 1st matching id. If not found, return {@code null}.</p>
      *
      * @param id    id to search for (or null to not search).
      *
-     * @return The child <code>UIComponent</code> if it exists, null otherwise.
+     * @return The child {@code UIComponent} if it exists, null otherwise.
      */
     public UIComponent findUIComponent(final String id) {
         final FacesContext ctx = FacesContext.getCurrentInstance();
@@ -374,14 +362,14 @@ parent.setInView(inview);
     }
 
     /**
-     * <p> Searches for a <coode>UIComponent</code> with the specified component id, starting from the specified
+     * <p> Searches for a {@code UIComponent} with the specified component id, starting from the specified
      *     component. It will search all children (depth first) for the 1st matching id. If not found, return
-     *     <code>null</code>.</p>
+     *     {@code null}.</p>
      *
-     * @param comp  <code>UIComponent</code> to be searched.
+     * @param comp  {@code UIComponent} to be searched.
      * @param id    id to search for (or null to not search).
      *
-     * @return The child <code>UIComponent</code> if it exists, null otherwise.
+     * @return The child {@code UIComponent} if it exists, null otherwise.
      */
     public UIComponent findUIComponent(final UIComponent comp, final String id) {
         if (comp == null) {
@@ -424,13 +412,13 @@ parent.setInView(inview);
     }
 
     /**
-     * <p> This method replaces all the children (recursively) of the given <code>UIComponenent</code> which are of
+     * <p> This method replaces all the children (recursively) of the given <code>UIComponent</code> which are of
      *     type "*facelets.compiler.UIInstructions" with a component of <code>ComponentType</code>
      *     "jakarta.faces.HtmlOutputText". This is because <code>UIInstructions</code> components are transient
-     *     (and additinonally don't work correctly if set to !transient). This causes them to be lost on POST requests
+     *     (and additionally don't work correctly if set to !transient). This causes them to be lost on POST requests
      *     back to the page. Due to the dynamic nature of our "mod" components, they cannot be restored correctly.</p>
      *
-     * <p> This is related to this issue: https://java.net/jira/browse/JAVASERVERFACES-3332.</p>
+     * <p> This is related to <a href="https://java.net/jira/browse/JAVASERVERFACES-3332">this issue</a>.</p>
      *
      * @param comp      The component to start from.
      * @param replace   <code>true</code> to replace each <code>UIInstructions</code> with an output text.
@@ -456,7 +444,7 @@ parent.setInView(inview);
                 // Perform Hack...
                 if (replace) {
                     newComp = createComponent(null, "jakarta.faces.HtmlOutputText", null);
-                    // Enable ValueExpresssions...
+                    // Enable ValueExpressions...
                     newComp.setValueExpression("value", elutil.getValueExpression(ctx, kid.toString()));
                     newComp.getAttributes().putAll(kid.getAttributes());
                     newComp.getAttributes().put("escape", false);
@@ -480,7 +468,7 @@ parent.setInView(inview);
     }
 
     /**
-     * <p> This method recurses through the <code>UIComponent</code> tree to generate a String representation of its
+     * <p> This method will recurse through the {@code UIComponent} tree to generate a String representation of its
      *     structure.</p>
      */
     private StringBuilder dumpTree(final UIComponent comp, final StringBuilder buf, final String indent) {
@@ -490,7 +478,7 @@ parent.setInView(inview);
             .append(") = (").append(comp.getAttributes().get("value")).append(")\n");
 
         // Children...
-        if (comp.getChildren().size() > 0) {
+        if (!comp.getChildren().isEmpty()) {
             buf.append(indent).append("  Children:\n");
             for (final UIComponent child : comp.getChildren()) {
                 dumpTree(child, buf, indent + "    ");

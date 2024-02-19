@@ -23,13 +23,18 @@ import java.util.List;
  *          src="existing:component:to:use:in:replacement" /&gt;<br />
  *     </code></p>
  *
- * <p> Note: Both <code>target</code> and <code>src</code> attributes may be absolute or relative ids, and they may
- *           also be a <code>UIComponent</code> object.</p>
+ * <p> Note: Both {@code target} and {@code src} attributes may be absolute or relative ids, and they may
+ *           also be a {@code UIComponent} object.</p>
  */
 public class ReplaceComponent extends ModComponentBase {
+    public static final String FAMILY = ReplaceComponent.class.getName();
+    /**
+     * <p> Listener instance.</p>
+     */
+    private transient ComponentSystemEventListener compListener = null;
 
     /**
-     * <p> This method returns the <code>ComponentSystemEventListener</code>
+     * <p> This method returns the {@code ComponentSystemEventListener}
      *     instance which performs the work done by this class.</p>
      */
     @Override
@@ -58,27 +63,25 @@ public class ReplaceComponent extends ModComponentBase {
         /**
          * Constructor.
          */
-        public PreRenderViewListener(ReplaceComponent comp) {
+        public PreRenderViewListener(final ReplaceComponent comp) {
             super(comp);
         }
 
         /**
          * <p> Perform the replacement.</p>
          */
-        public void processEvent(ComponentSystemEvent event) throws AbortProcessingException {
-            ReplaceComponent modComp = getModComponent();
+        public void processEvent(final ComponentSystemEvent event) throws AbortProcessingException {
+            final ReplaceComponent modComp = getModComponent();
             if (modComp == null) {
                 // Here due to deserialization, ignore...
                 return;
             }
-
             // Get the component & children
             List<UIComponent> children = getSourceComponents();
             if (children.isEmpty()) {
                 // Treat as delete
                 children = null;
             }
-
             // Find the target in which to add children
             UIComponent targetComp = getTargetComponent();
             if (targetComp == null) {
@@ -86,7 +89,6 @@ public class ReplaceComponent extends ModComponentBase {
                         "No 'target' property was specified on component '"
                         + modComp.getClientId() + "'");
             }
-
             // Replace Children to target...
             if (children == null) {
                 // Delete
@@ -94,14 +96,14 @@ public class ReplaceComponent extends ModComponentBase {
             } else {
                 // Replace target w/ new kids...
                 // 1st Replace w/ first kid
-                Iterator<UIComponent> iter = children.iterator();
-                UIComponent newKid = iter.next();
+                final Iterator<UIComponent> it = children.iterator();
+                UIComponent newKid = it.next();
                 COMP_COMMANDS.replaceUIComponent(targetComp, newKid);
 
                 // Next... insert after last inserted kid for rest of children
-                while (iter.hasNext()) {
+                while (it.hasNext()) {
                     targetComp = newKid;
-                    newKid = iter.next();
+                    newKid = it.next();
                     COMP_COMMANDS.insertUIComponentAfter(targetComp, newKid);
                 }
             }
@@ -110,14 +112,4 @@ public class ReplaceComponent extends ModComponentBase {
             super.processEvent(event);
         }
     }
-
-    /**
-     * <p> Listener instance.</p>
-     */
-    private transient ComponentSystemEventListener compListener = null;
-
-    /**
-     * <p> The component family.</p>
-     */
-    public static final String FAMILY        =   ReplaceComponent.class.getName();
 }

@@ -45,6 +45,7 @@ import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import lombok.Getter;
 
 /**
  * <p> This class gets ResourceBundle messages and formats them.</p>
@@ -53,18 +54,13 @@ import java.util.ResourceBundle;
  *  @author  Ken Paulsen (kenapaulsen@gmail.com)
  */
 public final class MessageUtil {
+    @Getter
+    private static final MessageUtil instance = new MessageUtil();
 
     /**
      * <p> This class should not be instantiated directly.</p>
      */
     private MessageUtil() {
-    }
-
-    /**
-     * <p> Use this to get an instance of this class.</p>
-     */
-    public static MessageUtil getInstance() {
-        return instance;
     }
 
     /**
@@ -136,17 +132,11 @@ public final class MessageUtil {
      * @param message The string used as a pattern for inserting arguments.
      * @param args The arguments to be inserted into the string.
      */
-    public static String getFormattedMessage(String message, Object args[]) {
+    public static String getFormattedMessage(final String message, final Object[] args) {
         // Sanity Check
         if ((message == null) || (args == null) || (args.length == 0)) {
             return message;
         }
-
         return new MessageFormat(message).format(args);
     }
-
-    /**
-     * <p> Singleton.  This one is OK to share across VMs (no state).</p>
-     */
-    private static final MessageUtil instance = new MessageUtil();
 }

@@ -6,20 +6,23 @@ import jakarta.faces.event.ComponentSystemEvent;
 import jakarta.faces.event.ComponentSystemEventListener;
 
 /**
- * <p> This component provides the functionality to set an attribute on a
- *     component specified by the given <code>target</code>. Usage:</p>
+ * <p> This component sets an attribute on a component specified by the given {@code target}. Usage:</p>
  *
  * <p> <code>
  *        &lt;jsft:setAttribute id="foo" target="some:target:component" attribute="rendered" value="false" /&gt;
  *     </code></p>
  *
- * <p> Note: The <code>target</code> attribute may be an absolute or relative
- *           id, it may also be a <code>UIComponent</code> object.</p>
+ * <p> Note: The {@code target} attribute may be an absolute or relative id, or a {@code UIComponent} object.</p>
  */
 public class SetAttributeComponent extends ModComponentBase {
+    public static final String FAMILY = SetAttributeComponent.class.getName();
+    /**
+     * <p> Listener instance.</p>
+     */
+    private transient ComponentSystemEventListener compListener = null;
 
     /**
-     * <p> This method should return the <code>ComponentSystemEventListener</code> instance which performs
+     * <p> This method should return the {@code ComponentSystemEventListener} instance which performs
      *     the work done by this class.</p>
      */
     @Override
@@ -36,29 +39,26 @@ public class SetAttributeComponent extends ModComponentBase {
     }
 
     /**
-     * <p> Overriden to throw <code>UnsupportedOperationException</code>.</p>
+     * <p> Overridden to throw {@code UnsupportedOperationException}.</p>
      */
     @Override
     public String getSrc() {
-        throw new UnsupportedOperationException(
-                "The 'src' attribute is not valid for jsft:setAttribute.");
+        throw new UnsupportedOperationException("The 'src' attribute is not valid for jsft:setAttribute.");
     }
 
     /**
-     * <p> Overriden to throw <code>UnsupportedOperationException</code>.</p>
+     * <p> Overridden to throw {@code UnsupportedOperationException}.</p>
      */
     @Override
     public void setSrc(Object src) {
-        throw new UnsupportedOperationException(
-                "The 'src' attribute is not valid for jsft:setAttribute.");
+        throw new UnsupportedOperationException("The 'src' attribute is not valid for jsft:setAttribute.");
     }
 
     /**
      * <p> Getter for the attribute name to set.</p>
      */
     public String getAttribute() {
-        return (String) getStateHelper().
-                eval(SetAttributePropertyKeys.attribute);
+        return (String) getStateHelper().eval(SetAttributePropertyKeys.attribute);
     }
 
     /**
@@ -78,14 +78,15 @@ public class SetAttributeComponent extends ModComponentBase {
     /**
      * <p> Setter for the value to apply to the field.</p>
      */
-    public void setValue(Object val) {
+    public void setValue(final Object val) {
         getStateHelper().put(SetAttributePropertyKeys.value, val);
     }
 
     /**
      * <p> Listener used to set the attribute on the target.</p>
      */
-    public static class PreRenderViewListener extends ModComponentBase.PreRenderViewListenerBase<SetAttributeComponent> {
+    public static class PreRenderViewListener extends
+            ModComponentBase.PreRenderViewListenerBase<SetAttributeComponent> {
         /**
          * Constructor.  Do not use... for deserialization only.
          */
@@ -96,45 +97,32 @@ public class SetAttributeComponent extends ModComponentBase {
         /**
          * Constructor.
          */
-        public PreRenderViewListener(SetAttributeComponent comp) {
+        public PreRenderViewListener(final SetAttributeComponent comp) {
             super(comp);
         }
 
         /**
          * <p> Perform the set attribute operation.</P>
          */
-        public void processEvent(ComponentSystemEvent event) throws AbortProcessingException {
-            SetAttributeComponent modComp = getModComponent();
+        public void processEvent(final ComponentSystemEvent event) throws AbortProcessingException {
+            final SetAttributeComponent modComp = getModComponent();
             if (modComp == null) {
                 // Here due to deserialization, ignore...
                 return;
             }
 
-            // Find the target UIComonent to receive the new attribute value
-            UIComponent targetComp = getTargetComponent();
+            // Find the target UIComponent to receive the new attribute value
+            final UIComponent targetComp = getTargetComponent();
             if (targetComp == null) {
-                throw new IllegalArgumentException(
-                        "No 'target' property was specified on component '"
+                throw new IllegalArgumentException("No 'target' property was specified on component '"
                         + modComp.getClientId() + "'");
             }
-
-            // Set it..
+            // Set it
             targetComp.getAttributes().put(modComp.getAttribute(), modComp.getValue());
-
             // This will remove this set attribute component...
             super.processEvent(event);
         }
     }
-
-    /**
-     * <p> The component family.</p>
-     */
-    public static final String FAMILY        =   SetAttributeComponent.class.getName();
-
-    /**
-     * <p> Listener instance.</p>
-     */
-    private transient ComponentSystemEventListener compListener = null;
 
     enum SetAttributePropertyKeys {
         attribute,

@@ -7,6 +7,7 @@ import jakarta.faces.event.PhaseId;
 import jakarta.faces.render.RenderKitFactory;
 import jakarta.faces.render.ResponseStateManager;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * <p> This UIViewRoot can be used to restore the ViewScope state upon creation.  This overcomes the JSF shortfall
@@ -17,6 +18,16 @@ import java.util.Map;
  *     point in the future, however.</p>
  */
 public class ViewScopeViewRoot extends UIViewRoot {
+    /**
+     *        <p> This Request-scoped key must be used to pass the current
+     *            <code>viewId</code> from the ViewHandler <code>createView</code>
+     *            and <code>restoreView</code> methods.  If this is not done, the
+     *            viewScope state cannot be restored.</p>
+     */
+    public static String CURR_VIEW_ID        = "jsftCVID";
+
+    // false will restore only the viewMap
+    private volatile boolean restoreAllState = true;
 
     /**
      * <p> Must restore the ViewState in the constructor because events which may use it get fired very soon
@@ -39,7 +50,7 @@ public class ViewScopeViewRoot extends UIViewRoot {
         ctx.setViewRoot(this);
 
         // View Id
-        String viewId = (String) ctx.getAttributes().get(CURR_VIEW_ID);
+        final String viewId = (String) ctx.getAttributes().get(CURR_VIEW_ID);
         if (viewId == null) {
             throw new IllegalStateException(
                 "The FacesContext must have an attribute set with the name: "
@@ -50,15 +61,15 @@ public class ViewScopeViewRoot extends UIViewRoot {
         }
 
         // RenderKit Id
-        String rkId = ctx.getApplication().getViewHandler().calculateRenderKitId(ctx);
+        final String rkId = ctx.getApplication().getViewHandler().calculateRenderKitId(ctx);
 
         // ResponseStateManager
-        ResponseStateManager manager = ((RenderKitFactory) FactoryFinder.
+        final ResponseStateManager manager = ((RenderKitFactory) FactoryFinder.
                 getFactory(FactoryFinder.RENDER_KIT_FACTORY)).
                 getRenderKit(ctx, rkId).getResponseStateManager();
 
         // Get the viewState
-        Object state[] = (Object []) manager.getState(ctx, viewId);
+        final Object[] state = (Object[]) manager.getState(ctx, viewId);
         if (state != null) {
             // Found it!
             if (!(state[1] instanceof Object[])) {
@@ -73,8 +84,9 @@ public class ViewScopeViewRoot extends UIViewRoot {
                 }
 
                 // Partial state saving (JSF 2 default...)
-                Map<String, Object> states = (Map<String, Object>) state[1];
-                Object viewState = (states == null) ? null : states.get(cid);
+                @SuppressWarnings("unchecked")
+                final Map<String, Object> states = (Map<String, Object>) state[1];
+                final Object viewState = (states == null) ? null : states.get(cid);
                 if (viewState != null) {
                     // Don't restore everything now...
                     restoreAllState = false;
@@ -83,11 +95,12 @@ public class ViewScopeViewRoot extends UIViewRoot {
                     // Reset flag
                     restoreAllState = true;
                 }
-            } else {
+            }
+            //else {
                 // Full state saving
                 // Not currently handled... event cycle is different, this code
                 // path is not applicable for what we're trying to do for now
-            }
+            //}
         }
     }
 
@@ -103,12 +116,12 @@ public class ViewScopeViewRoot extends UIViewRoot {
     }
 
     /**
-     * <p> This is overriden to provide the ability to restore the View Map from the given state info. If
-     *     {@link restoreAllState} is false, it will restore only the View Map.</p>
+     * <p> This is overridden to provide the ability to restore the View Map from the given state info. If
+     *     {@link #restoreAllState} is false, it will restore only the View Map.</p>
      */
     @Override
-    public void restoreState(FacesContext context, Object state) {
-        Object values[] = (Object []) state;
+    public void restoreState(final FacesContext context, final Object state) {
+        Object[] values = (Object[]) state;
 
         // Handle the super behavior (unless we only want to restore viewMap)
         if (restoreAllState) {
@@ -116,7 +129,8 @@ public class ViewScopeViewRoot extends UIViewRoot {
         }
 
         // Get the viewMap
-        Map<String, Object> restoredViewMap = (Map<String, Object>) values[1];
+        @SuppressWarnings("unchecked")
+        final Map<String, Object> restoredViewMap = (Map<String, Object>) values[1];
 
         // Mojarra hack to Set to prevent saving multiple viewMaps per user
         // in session -- we are recreating everytime each request anyway.
@@ -126,7 +140,7 @@ public class ViewScopeViewRoot extends UIViewRoot {
 
         // Get the default Map (may be backed by session), this allows the
         // internal impl to do what it needs to do
-        Map<String, Object> origMap = getViewMap(true);
+        final Map<String, Object> origMap = getViewMap(true);
 
         // Clear it (we want it to be clean)
         origMap.clear();
@@ -155,26 +169,13 @@ public class ViewScopeViewRoot extends UIViewRoot {
         // Check the class names
         if (this.getClass().getName().equals(obj.getClass().getName())) {
             // Same class... check the viewId's:
-            UIViewRoot root = (UIViewRoot) obj;
-            String myViewId = "" + this.getViewId();
-            String otherViewId = "" + root.getViewId();
-            if (myViewId.equals(otherViewId)) {
-                return true;
-            }
+            final UIViewRoot root = (UIViewRoot) obj;
+            final String myViewId = this.getViewId();
+            final String otherViewId = root.getViewId();
+            return Objects.equals(myViewId, otherViewId);
         }
 
         // Not a match
         return false;
     }
-
-    // false will restore only the viewMap
-    private boolean restoreAllState = true;
-
-    /**
-     *        <p> This Request-scoped key must be used to pass the current
-     *            <code>viewId</code> from the ViewHandler <code>createView</code>
-     *            and <code>restoreView</code> methods.  If this is not done, the
-     *            viewScope state cannot be restored.</p>
-     */
-    public static String CURR_VIEW_ID        = "jsftCVID";
 }

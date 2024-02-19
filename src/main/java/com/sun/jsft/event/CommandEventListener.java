@@ -71,22 +71,20 @@ public class CommandEventListener extends Command implements ComponentSystemEven
     }
 
     /**
-     * <p> Primary constructor used.  It is neeeded in order to supply a list
+     * <p> Primary constructor used.  It is needed in order to supply a list
      *     of commands.</p>
      */
-    public CommandEventListener(List<Command> commands) {
+    public CommandEventListener(final List<Command> commands) {
         super(commands, null);
     }
 
     /**
-     * <p> This method is responsible for dispatching the event to the various
-     *     EL expressions that are listening to this event.  It also stores
-     *     the Event object in request scope under the key "theEvent" so that
-     *     it can be accessed easily via EL.  For example:
-     *     <code>util.println(theEvent);</code></p>
+     * <p> This method is responsible for dispatching the event to the various EL expressions that are listening to
+     *     this event. It also stores the Event object in request scope under the key "theEvent" so that it can be
+     *     accessed easily via EL. For example: <code>util.println(theEvent);</code></p>
      */
     @SuppressWarnings("unchecked")
-    public void processEvent(ComponentSystemEvent event) throws AbortProcessingException {
+    public void processEvent(final ComponentSystemEvent event) throws AbortProcessingException {
         final FacesContext ctx = event.getFacesContext();
         if (JSFTCommands.isComplete(ctx)) {
             // If we redirect, processing for that same phase continues... we don't want that, just stop.

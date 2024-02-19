@@ -48,33 +48,25 @@ import jakarta.faces.event.ComponentSystemEvent;
 
 
 /**
- *  <p> This event is used to process an <code>AjaxBehaviorEvent</code>.  We
- *      need this event as opposed to an <code>AjaxBehaviorEvent</code> because
- *      JSF Event code requires a <code>ComponentSystemEvent</code>, so
- *      <code>AjaxBehaviorEvent</code> does not work.</p>
+ *  <p> This event is used to process an {@code AjaxBehaviorEvent}. We need this event as opposed to an
+ *      {@code AjaxBehaviorEvent} because JSF Event code requires a {@code ComponentSystemEvent}, so
+ *      {@code AjaxBehaviorEvent} does not work.</p>
  */
 public class AjaxEvent extends ComponentSystemEvent {
-
-    /**
-     *  <p> Constructor.</p>
-     */
-    public AjaxEvent(UIComponent src) {
+    public AjaxEvent(final UIComponent src) {
         super(src);
     }
 
     /**
-     *  <p> This method provides access to the Original
-     *      <code>AjaxBehaviorEvent</code> that triggered this
-     *      <code>AjaxEvent</code>.</p>
+     *  <p> This method gets the Original {@code AjaxBehaviorEvent} that triggered this {@code AjaxEvent}.</p>
      */
     public AjaxBehaviorEvent getAjaxEvent() {
-        return (AjaxBehaviorEvent) FacesContext.getCurrentInstance().
-                getExternalContext().getRequestMap().get("_AjaxEvnt");
+        return (AjaxBehaviorEvent) FacesContext.getCurrentInstance().getExternalContext()
+            .getRequestMap().get("_AjaxEvnt");
     }
 
     /**
-     *  <p> This method provides access to the <code>AjaxBehaviorEvent</code>
-     *      <b>type</b> that triggered this <code>AjaxEvent</code>.</p>
+     *  <p> This method gets the {@code AjaxBehaviorEvent} <b>type</b> that triggered this {@code AjaxEvent}.</p>
      */
     public String getAjaxEventType() {
         return (String) FacesContext.getCurrentInstance().

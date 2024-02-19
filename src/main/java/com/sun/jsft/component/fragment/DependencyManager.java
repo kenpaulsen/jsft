@@ -45,9 +45,9 @@ import jakarta.faces.event.SystemEventListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * <p> To get an instance of this class, use {@link #getInstance()}.  This will check the
@@ -60,7 +60,7 @@ public abstract class DependencyManager {
     /**
      * <p> This <code>Map</code> will hold all the {@link Dependency}'s.</p>
      */
-    private final Map<String, Dependency> dependencies = new HashMap<>(2);
+    private final Map<String, Dependency> dependencies = new ConcurrentHashMap<>(2);
     /**
      * <p> The request scope key for holding the DEPENDENCY_MANAGER instance to make it easily obtained.</p>
      */
@@ -71,11 +71,9 @@ public abstract class DependencyManager {
     public static final String IMPL_CLASS           = "com.sun.jsft.DEPENDENCY_MANAGER";
 
     /**
-     * <p> This method is responsible for executing the queued Dependencies.  It is
-     *     possible this method may be called more than once (not common), so
-     *     care should be taken to ensure this is handled appropriately.  This
-     *     method is normally executed after the page (excluding
-     *     DefferedFragments, of course) have been rendered.</p>
+     * <p> This method is responsible for executing the queued Dependencies. It is possible this method may be called
+     *     more than once (not common), so care should be taken to ensure this is handled appropriately. This method
+     *     is normally executed after the page (excluding DeferredFragments, of course) have been rendered.</p>
      */
     public abstract void start();
 
@@ -86,24 +84,22 @@ public abstract class DependencyManager {
         // See if we already calculated the DependencyManager for this request
         final FacesContext ctx = FacesContext.getCurrentInstance();
         DependencyManager dependencyManager = null;
-        Map<String, Object> requestMap = null;
         if (ctx != null) {
-            requestMap = ctx.getExternalContext().getRequestMap();
+            final Map<String, Object> requestMap = ctx.getExternalContext().getRequestMap();
             dependencyManager = (DependencyManager) requestMap.get(DEPENDENCY_MANAGER);
-        }
-        if (dependencyManager == null) {
-            final Map<String, String> initParams = ctx.getExternalContext().getInitParameterMap();
-            final String className = initParams.get(IMPL_CLASS);
-            if (className != null) {
-                try {
-                    dependencyManager = (DependencyManager) Class.forName(className).newInstance();
-                } catch (Exception ex) {
-                    throw new RuntimeException(ex);
+            if (dependencyManager == null) {
+                final Map<String, String> initParams = ctx.getExternalContext().getInitParameterMap();
+                final String className = initParams.get(IMPL_CLASS);
+                if (className != null) {
+                    try {
+                        dependencyManager = (DependencyManager) Class.forName(className)
+                            .getDeclaredConstructor().newInstance();
+                    } catch (final Exception ex) {
+                        throw new RuntimeException(ex);
+                    }
+                } else {
+                    dependencyManager = new DefaultDependencyManager();
                 }
-            } else {
-                dependencyManager = new DefaultDependencyManager();
-            }
-            if (requestMap != null) {
                 requestMap.put(DEPENDENCY_MANAGER, dependencyManager);
             }
         }
@@ -114,15 +110,12 @@ public abstract class DependencyManager {
      * <p> This method is provided in case the developer would like to provide their own way to calculate and create
      *     the <code>DependencyManager</code> implementation to use.</p>
      */
-    public static void setDependencyManager(DependencyManager dependencyManager) {
-        FacesContext ctx = FacesContext.getCurrentInstance();
-        if (ctx != null) {
-            ctx.getExternalContext().getRequestMap().put(
-                    DEPENDENCY_MANAGER, dependencyManager);
-        } else {
-            throw new RuntimeException(
-                "Currently only JSF is supported!  FacesContext not found.");
+    public static void setDependencyManager(final DependencyManager dependencyManager) {
+        final FacesContext ctx = FacesContext.getCurrentInstance();
+        if (ctx == null) {
+            throw new RuntimeException("Currently only JSF is supported! FacesContext not found.");
         }
+        ctx.getExternalContext().getRequestMap().put(DEPENDENCY_MANAGER, dependencyManager);
     }
 
     /**
@@ -143,10 +136,10 @@ public abstract class DependencyManager {
      *
      *  @param newListeners The SystemEventListener associated with this dependency and optional type if specified.
      */
-    protected void addDependency(String dependencyName, String type, SystemEventListener ... newListeners) {
-// FIXME: Do I want to accept priority too??  Or perhaps that is handled in
-// FIXME: the implementation-specific way dependencies are registered?  Or is priority
-// FIXME: only associated with DeferredFragments?
+    protected void addDependency(
+            final String dependencyName, final String type, final SystemEventListener ... newListeners) {
+// FIXME: Do I want to accept priority too?? Or perhaps that is handled in the implementation-specific way
+// FIXME: dependencies are registered? Or is priority only associated with DeferredFragments?
         Dependency dependency = dependencies.get(dependencyName);
         if (dependency == null) {
             // New Dependency, create and add...
@@ -155,7 +148,7 @@ public abstract class DependencyManager {
             dependencies.put(dependencyName, dependency);
         } else {
             // Dependency already created, add the listeners for this type...
-            List<SystemEventListener> dependencyListeners = dependency.getListeners(type);
+            final List<SystemEventListener> dependencyListeners = dependency.getListeners(type);
             if (dependencyListeners == null) {
                 dependency.setListeners(type, toArrayList(newListeners));
             } else {
@@ -170,7 +163,7 @@ public abstract class DependencyManager {
      *     {@link #addDependency(String, String, SystemEventListener...)} for each of the derived dependencies and
      *     returns a count of them.</p>
      */
-    public abstract int addDependencies(String dependencyString, SystemEventListener... newListeners);
+    public abstract int addDependencies(final String dependencyString, final SystemEventListener... newListeners);
 
     /**
      * <p> This method returns the <code>List&lt;Dependency&gt;</code>.</p>

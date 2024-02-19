@@ -44,16 +44,15 @@ import jakarta.faces.component.UIComponent;
 import jakarta.faces.event.ComponentSystemEvent;
 
 /**
- *  <p> This event is used when <code>ActionSource</code> fires an event.  We
- *      need this event as opposed to an <code>ActionEvent</code> because
- *      JSF Event code requires a <code>ComponentSystemEvent</code>, so
- *      <code>ActionEvent</code> does not work.</p>
+ *  <p> This event is used when {@code ActionSource} fires an event. We need this event as opposed to an
+ *      {@code ActionEvent} because JSF Event code requires a {@code ComponentSystemEvent}, so {@code ActionEvent}
+ *      does not work.</p>
  */
 public class CommandActionEvent extends ComponentSystemEvent {
     /**
      *  <p> Constructor.</p>
      */
-    public CommandActionEvent(UIComponent src) {
+    public CommandActionEvent(final UIComponent src) {
         super(src);
     }
 }

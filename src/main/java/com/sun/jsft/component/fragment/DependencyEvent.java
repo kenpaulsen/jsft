@@ -38,47 +38,38 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package com.sun.jsft.component.fragment;
 
 import jakarta.faces.event.SystemEvent;
+import lombok.Getter;
 
 /**
- *  <p>        This event is used for dispatching {@link Dependency} related events.</p>
+ *  <p>This event is used for dispatching {@link Dependency} related events.</p>
  */
+@Getter
 public class DependencyEvent extends SystemEvent {
-
     /**
-     * <p> Constructor.</p>
+     * <p> This event's sub-type, which defaults to {@link #DEPENDENCY_COMPLETE}.</p>
      */
-    public DependencyEvent(Dependency source) {
-        super(source);
-    }
-
-    /**
-     * <p> Constructor.</p>
-     */
-    public DependencyEvent(Dependency source, String type) {
-        super(source);
-        if (type != null) {
-            this.type = type;
-        }
-    }
-
-    /**
-     * <p> Returns the event sub-type.</p>
-     */
-    public String getType() {
-        return type;
-    }
-
-    /**
-     * <p> This event's sub-type, which defaults to {@link DEPENDENCY_COMPLETE}.</p>
-     */
-    private String type = DEPENDENCY_COMPLETE;
+    private final String type;
 
     /**
      * <p> The sub-type used when a {@link Dependency} has completed.</p>
      */
     public static final String DEPENDENCY_COMPLETE        = "dependencyComplete";
+
+    /**
+     * <p> Constructor.</p>
+     */
+    public DependencyEvent(Dependency source) {
+        this(source, null);
+    }
+
+    /**
+     * <p> Constructor.</p>
+     */
+    public DependencyEvent(final Dependency source, final String type) {
+        super(source);
+        this.type = (type == null) ? DEPENDENCY_COMPLETE : type;
+    }
 }

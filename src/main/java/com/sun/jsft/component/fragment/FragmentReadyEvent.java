@@ -38,7 +38,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package com.sun.jsft.component.fragment;
 
 import jakarta.faces.event.ComponentSystemEvent;
@@ -47,11 +46,10 @@ import jakarta.faces.event.ComponentSystemEvent;
  * <p> This event is used for dispatching {@link Dependency} related events.</p>
  */
 public class FragmentReadyEvent extends ComponentSystemEvent {
-
     /**
      * <p> Constructor.</p>
      */
-    public FragmentReadyEvent(DeferredFragment source) {
+    public FragmentReadyEvent(final DeferredFragment source) {
         super(source);
     }
 }

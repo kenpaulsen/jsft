@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Stack;
+import lombok.Getter;
 
 /**
  * <p> This class is responsible for the actual parsing of a template.</p>
@@ -68,6 +69,8 @@ public class CommandParser {
      * <p><ul><li><code>" \t\r\n"</code></li></ul></p>
      */
     public static final String SIMPLE_WHITE_SPACE        = " \t\r\n";
+
+    @Getter
     private final InputStream inputStream;
     private transient BufferedReader reader        = null;
     private transient Stack<Character> stack        = null;
@@ -79,14 +82,6 @@ public class CommandParser {
      */
     public CommandParser(final InputStream stream) {
         inputStream = stream;
-    }
-
-    /**
-     * <p> Accessor for the <code>InputStream</code>.  This comes from
-     *     the supplied <code>InputStream</code>.</p>
-     */
-    public InputStream getInputStream() {
-        return inputStream;
     }
 
     /**
@@ -126,18 +121,14 @@ public class CommandParser {
      * <p> This method returns the next character.</p>
      */
     public int nextChar() throws IOException {
-        if (!stack.empty()) {
-            // We have values in the queue
-            return stack.pop().charValue();
-        }
-        return reader.read();
+        return stack.empty() ? reader.read() : stack.pop();
     }
 
     /**
      * <p> This method pushes a character on the read queue so that it will be read next.</p>
      */
     public void unread(int ch) {
-        stack.push(Character.valueOf((char) ch));
+        stack.push((char) ch);
     }
 
     /**
@@ -246,15 +237,15 @@ public class CommandParser {
      */
     public String readUntil(String endingStr, boolean skipComments) throws IOException {
         // Sanity Check
-        if ((endingStr == null) || (endingStr.length() == 0)) {
+        if ((endingStr == null) || (endingStr.isEmpty())) {
             return "";
         }
 
         // Break String into characters
-        char[] arr = endingStr.toCharArray();
-        int arrlen = arr.length;
+        final char[] arr = endingStr.toCharArray();
+        final int arrlen = arr.length;
 
-        final StringBuilder buf = new StringBuilder("");
+        final StringBuilder buf = new StringBuilder();
         int ch = nextChar();  // Read a char to unread
         int idx = 0;
         do {
@@ -415,15 +406,15 @@ public class CommandParser {
         int ch = -1;
         while (!stack.empty()) {
             // We have values in the queue
-            ch = stack.pop().charValue();
+            ch = stack.pop();
             if ((ch == '\r') || (ch == '\n')) {
                 // We hit the EOL...
                 // Check to see if there are 2...
                 if (!stack.empty()) {
-                    ch = stack.peek().charValue();
+                    ch = stack.peek();
                     if ((ch == '\r') || (ch == '\n')) {
                         // Remove this one too...
-                        stack.pop().charValue();
+                        stack.pop();
                     }
                 }
                 return buf.toString();

@@ -17,19 +17,19 @@ public class PFAjaxBehaviorEventListener extends AjaxBehaviorListenerImpl {
      *  <p> This constructor requires the f:ajax event type so that it can be
      *      used later to distinguish between different Ajax events.</p>
      */
-    public PFAjaxBehaviorEventListener(String type) {
+    public PFAjaxBehaviorEventListener(final String type) {
         super();
         delegate = new AjaxBehaviorEventListener(type);
     }
 
     /**
-     *  <p> This method processes the <code>AjaxBehaviorEvent</code>.</p>
+     *  <p> This method processes the {@code AjaxBehaviorEvent}.</p>
      *
-     *  @param event the <code>AjaxBehaviorEvent</code> instance that is being processed.
+     *  @param event the {@code AjaxBehaviorEvent} instance that is being processed.
      *
      *  @throws AbortProcessingException if lifecycle processing should cease for this request.
      */
-    public void processAjaxBehavior(AjaxBehaviorEvent event) throws AbortProcessingException {
+    public void processAjaxBehavior(final AjaxBehaviorEvent event) throws AbortProcessingException {
         delegate.processAjaxBehavior(event);
     }
 }

@@ -47,20 +47,18 @@ import jakarta.faces.event.ActionListener;
 import lombok.EqualsAndHashCode;
 
 /**
- *  <p> This class is used to handle an event when an <code>ActionSource</code>
- *      is activated.</p>
+ *  <p> This class is used to handle an event when an {@code ActionSource} is activated.</p>
  */
 @EqualsAndHashCode
 public class CommandActionListener implements ActionListener {
     /**
      * <p>Invoked when the action described by the specified
-     * <code>ActionEvent</code> occurs.</p>
+     * {@code ActionEvent} occurs.</p>
      *
-     * @param event The <code>ActionEvent</code> that has occurred
+     * @param event The {@code ActionEvent} that has occurred
      *
-     * @throws AbortProcessingException Signal the JavaServer Faces
-     *  implementation that no further processing on the current event
-     *  should be performed
+     * @throws AbortProcessingException Signal the JavaServer Faces implementation that no further processing on the
+     *                                  current event should be performed
      */
     public void processAction(final ActionEvent event) throws AbortProcessingException {
         final FacesContext ctx = event.getFacesContext();

@@ -38,7 +38,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package com.sun.jsft.event;
 
 import jakarta.faces.context.FacesContext;
@@ -63,10 +62,10 @@ public class AjaxBehaviorEventListener implements AjaxBehaviorListener, java.io.
     }
 
     /**
-     *  <p> This constructor requires the f:ajax event type so that it can be
-     *      used later to distinguish between different Ajax events.</p>
+     *  <p> This constructor requires the f:ajax event type so that it can be used later to distinguish between
+     *      different Ajax events.</p>
      */
-    public AjaxBehaviorEventListener(String type) {
+    public AjaxBehaviorEventListener(final String type) {
         super();
         this.eventType = type;
     }
@@ -74,28 +73,28 @@ public class AjaxBehaviorEventListener implements AjaxBehaviorListener, java.io.
     public String getType() {
         return this.eventType;
     }
-    public void setType(String type) {
+
+    public void setType(final String type) {
         this.eventType = type;
     }
 
     /**
-     *  <p> This method processes the <code>AjaxBehaviorEvent</code>.</p>
+     *  <p> This method processes the {@code AjaxBehaviorEvent}.</p>
      *
-     *  @param event the <code>AjaxBehaviorEvent</code> instance that is being processed.
+     *  @param event the {@code AjaxBehaviorEvent} instance that is being processed.
      *
      *  @throws AbortProcessingException if lifecycle processing should cease for this request.
      */
-    public void processAjaxBehavior(AjaxBehaviorEvent event) throws AbortProcessingException {
-        FacesContext ctx = FacesContext.getCurrentInstance();
-        Map<String, Object> reqMap = ctx.getExternalContext().getRequestMap();
+    public void processAjaxBehavior(final AjaxBehaviorEvent event) throws AbortProcessingException {
+        final FacesContext ctx = FacesContext.getCurrentInstance();
+        final Map<String, Object> reqMap = ctx.getExternalContext().getRequestMap();
         reqMap.put("_AjaxEvnt", event);
         reqMap.put("_AjaxEvntType", getType());
-
         ctx.getApplication().publishEvent(ctx, AjaxEvent.class, event.getComponent());
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         if (obj == null) {
             // Not if null
             return false;
@@ -104,21 +103,18 @@ public class AjaxBehaviorEventListener implements AjaxBehaviorListener, java.io.
             // Same object
             return true;
         }
-
         // Compare class names...
         if (obj.getClass().equals(this.getClass())) {
             // Match... see if the eventTypes match
-            String myType = getType();
-            String otherType = ((AjaxBehaviorEventListener) obj).getType();
+            final String myType = getType();
+            final String otherType = ((AjaxBehaviorEventListener) obj).getType();
             if (myType == null) {
                 // Return true only of otherType is also (null)
                 return (otherType == null);
             }
-
             // Return true if the Strings are equal
             return myType.equals(otherType);
         }
-
         // Not a match
         return false;
     }

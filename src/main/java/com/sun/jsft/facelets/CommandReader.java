@@ -42,7 +42,6 @@ package com.sun.jsft.facelets;
 
 import com.sun.jsft.event.Command;
 import com.sun.jsft.event.ELCommand;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -84,7 +83,7 @@ public class CommandReader {
     /**
      * <p> Constructor.</p>
      */
-    public CommandReader(String str) {
+    public CommandReader(final String str) {
         this(new ByteArrayInputStream(
                 ("{" + CommandReader.unwrap(str) + "\n}").getBytes()));
     }
@@ -94,7 +93,7 @@ public class CommandReader {
      *
      * @param stream The <code>InputStream</code> for the {@link Command}.
      */
-    protected CommandReader(InputStream stream) {
+    protected CommandReader(final InputStream stream) {
         parser = new CommandParser(stream);
     }
 
@@ -132,30 +131,35 @@ public class CommandReader {
 
         // Read the children
         int ch = parser.nextChar();
-        List<Command> commandChildren = null;
+        final List<Command> commandChildren;
         if (ch == '{') {
             // Read the Command Children 
             commandChildren = readCommandList();
         } else if (ch == '}') {
+            commandChildren = null;
             parser.unread(ch);
+        } else {
+            commandChildren = null;
         }
         // Check to see if there is a variable to store the result...
-        String variable = null;
         int idx = indexOf((byte) '=', commandLine);
+        final String variable;
         if (idx != -1) {
             // We have a result variable, store it separately...
             variable = commandLine.substring(0, idx).trim();
             commandLine = commandLine.substring(++idx).trim();
+        } else {
+            variable = null;
         }
         // If "if" handle "else" if present
-        Command elseCommand = null;
+        final Command elseCommand;
         if (commandLine.startsWith("if")) {
             // First convert "if" to the real if handler...
             commandLine = "jsft.ifCommand" + commandLine.substring(2);
 
             // Check the next few characters to see if they are "else"...
             parser.skipCommentsAndWhiteSpace(CommandParser.SIMPLE_WHITE_SPACE);
-            int[] next = new int[] {
+            final int[] next = new int[] {
                 parser.nextChar(),
                 parser.nextChar(),
                 parser.nextChar(),
@@ -170,6 +174,7 @@ public class CommandReader {
                 // This is an else case, parse it...
                 elseCommand = readCommand();
             } else {
+                elseCommand = null;
                 // Not an else, restore the parser state
                 for (idx=4; idx > -1; idx--) {
                     if (next[idx] != -1) {
@@ -177,18 +182,12 @@ public class CommandReader {
                     }
                 }
             }
+        } else {
+            elseCommand = null;
         }
         // Create the Command
-        Command command = null;
-        if ((commandLine.length() > 0) || (commandChildren != null)) {
-            command = new ELCommand(
-                    variable,
-                    convertKeywords(commandLine),
-                    commandChildren,
-                    elseCommand);
-        }
-        // Return the LayoutElement
-        return command;
+        return (!commandLine.isEmpty()) || (commandChildren != null) ? new ELCommand(
+                    variable, convertKeywords(commandLine), commandChildren, elseCommand) : null;
     }
 
     /**
@@ -199,8 +198,8 @@ public class CommandReader {
             return null;
         }
         // Get the key to lookup
+        final int paren = exp.indexOf(OPEN_PAREN);
         String key = exp;
-        int paren = exp.indexOf(OPEN_PAREN);
         if (paren != -1) {
             key = exp.substring(0, paren);
             if (key.indexOf('.') != -1) {
@@ -221,8 +220,7 @@ public class CommandReader {
      *     within parenthesis or quotes.</p>
      */
     private int indexOf(final byte ch, final String str) {
-        byte[] bytes = str.getBytes();
-        
+        final byte[] bytes = str.getBytes();
         int idx = 0;
         int insideChar = -1;
         for (byte curr : bytes) {
@@ -255,9 +253,8 @@ public class CommandReader {
      * <p> This method reads Commands until a closing '}' is encountered.</p>
      */
     private List<Command> readCommandList() throws IOException {
+        final List<Command> commands = new ArrayList<>();
         int ch = parser.nextChar();
-        List<Command> commands = new ArrayList<>();
-        Command command;
         while (ch != '}') {
             // Make sure readCommand gets the full command line...
             if (ch != '{') {
@@ -266,7 +263,7 @@ public class CommandReader {
             }
 
             // Read a Command
-            command = readCommand();
+            final Command command = readCommand();
             if (command != null) {
                 commands.add(command);
             }
@@ -292,7 +289,7 @@ public class CommandReader {
     private static String unwrap(String str) {
         str = str.trim();
         if (str.startsWith(OPEN_CDATA)) {
-            int endingIdx = str.lastIndexOf(CLOSE_CDATA);
+            final int endingIdx = str.lastIndexOf(CLOSE_CDATA);
             if (endingIdx != -1) {
                 // Remove the CDATA wrapper
                 str = str.substring(OPEN_CDATA.length(), endingIdx);

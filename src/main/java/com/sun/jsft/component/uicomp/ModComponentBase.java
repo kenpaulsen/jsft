@@ -11,43 +11,36 @@ import jakarta.faces.event.ComponentSystemEvent;
 import jakarta.faces.event.ComponentSystemEventListener;
 import jakarta.faces.event.PhaseId;
 import jakarta.faces.event.PreRenderViewEvent;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
 
 /**
  *  <p> This component provides the functionality to insert component(s) before or after the specified id.</p>
  */
 public abstract class ModComponentBase extends UIComponentBase implements NamingContainer {
-
     /**
      * <p> Default constructor.</p>
      */
     public ModComponentBase() {
-        FacesContext ctx = FacesContext.getCurrentInstance();
-
-        // Ensure we have a FacesContext 
+        final FacesContext ctx = FacesContext.getCurrentInstance();
+        // Ensure we have a FacesContext
         if (ctx == null) {
             // Test env?
             return;
         }
 
         // May be null in test environment
-        boolean isPost = ctx.isPostback();
+        final boolean isPost = ctx.isPostback();
 
-        // Ensure the request is either a GET (!POST) ... *OR* a POST but
-        // it's not currently in the RESTORE_VIEW phase
-        if (!isPost || (isPost && !ctx.getCurrentPhaseId().equals(PhaseId.RESTORE_VIEW))) {
+        // Ensure request is either GET (!POST) ... *OR* a POST, but not currently in RESTORE_VIEW phase
+        if (!isPost || !ctx.getCurrentPhaseId().equals(PhaseId.RESTORE_VIEW)) {
 // HACK: Mojarra recreates this component during the RENDER phase for some reason
-            UIViewRoot viewRoot = ctx.getViewRoot();
+            final UIViewRoot viewRoot = ctx.getViewRoot();
 boolean viewPopulated = ctx.getAttributes().containsKey(viewRoot);
 //System.out.println("############# Mojarra hack: '" + viewPopulated + "'");
 if (!viewPopulated) {
 // Don't do this if we've already done it...
-            viewRoot.subscribeToEvent(
-                PreRenderViewEvent.class,
-                getComponentSystemEventListener());
+            viewRoot.subscribeToEvent(PreRenderViewEvent.class, getComponentSystemEventListener());
 }
         }
     }
@@ -69,7 +62,7 @@ if (!viewPopulated) {
      * <p> Do nothing.  This component has no visual effect of its own.</p>
      */
     @Override
-    public void encodeBegin(FacesContext context) throws IOException {
+    public void encodeBegin(final FacesContext context) {
         // Override the default behavior and do nothing... save time.
     }
 
@@ -77,7 +70,7 @@ if (!viewPopulated) {
      * <p> Do nothing.  This component has no visual effect of its own.</p>
      */
     @Override
-    public void encodeEnd(FacesContext ctx) throws IOException {
+    public void encodeEnd(final FacesContext ctx) {
         // Override the default behavior and do nothing... save time.
     }
 
@@ -113,6 +106,10 @@ if (!viewPopulated) {
      * <p> Listener base class.</p>
      */
     public static class PreRenderViewListenerBase<T extends ModComponentBase> implements ComponentSystemEventListener {
+        protected static final ComponentCommands COMP_COMMANDS = ComponentCommands.getInstance();
+        private boolean replacedUIInstructions = false;
+        private final T comp;
+
         /**
          *  Constructor.  Do not use... for deserialization only.
          */
@@ -123,7 +120,7 @@ if (!viewPopulated) {
         /**
          *  Constructor.
          */
-        public PreRenderViewListenerBase(T comp) {
+        public PreRenderViewListenerBase(final T comp) {
             this.comp = comp;
         }
 
@@ -136,7 +133,7 @@ if (!viewPopulated) {
          *      to clean up.  This prevents JSF from attempting to
          *      [de]serialize this object, which will fail.</P>
          */
-        public void processEvent(ComponentSystemEvent event) throws AbortProcessingException {
+        public void processEvent(final ComponentSystemEvent event) throws AbortProcessingException {
             // Remove event listener...
             // Can't... causes an exception during event listener iteration...
             //UIViewRoot viewRoot = FacesContext.getCurrentInstance().getViewRoot();
@@ -158,41 +155,34 @@ if (!viewPopulated) {
          * <p> This method returns the target component in which the operation is to perform.</p>
          */
         public UIComponent getTargetComponent() {
-            UIComponent result = null;
-
             // Find the target in which to add children
-            Object target = getModComponent().getTarget();
+            final Object target = getModComponent().getTarget();
             if (target == null) {
                 return null;
             }
 
             // Ensure it is a UIComponent, or find it if it's an id
-            result = (UIComponent) resolveComponent(target);
+            final UIComponent result = resolveComponent(target);
             if (result == null) {
-                throw new IllegalArgumentException(
-                        "Unable to find UIComponent target: '"
-                        + target + "'");
+                throw new IllegalArgumentException("Unable to find UIComponent target: '" + target + "'");
             }
-
             return result;
         }
 
-        private UIComponent resolveComponent(Object obj) {
+        private UIComponent resolveComponent(final Object obj) {
             UIComponent result = null;
             if (obj instanceof UIComponent) {
                 result = (UIComponent) obj;
             } else if (obj instanceof String) {
                 // Need to find the UIComponent
-                String id = (String) obj;
+                final String id = (String) obj;
                 if (id.contains(":")) {
                     // Use clientId search...
                     result = COMP_COMMANDS.getUIComponent(id);
                 }
                 if (result == null) {
                     // Use simple id search...
-                    result = COMP_COMMANDS.findUIComponent(
-                        (UIViewRoot) FacesContext.getCurrentInstance().
-                        getViewRoot(), id);
+                    result = COMP_COMMANDS.findUIComponent(FacesContext.getCurrentInstance().getViewRoot(), id);
                 }
             }
             return result;
@@ -210,11 +200,11 @@ if (!viewPopulated) {
          *     list).</p>
          */
         public List<UIComponent> getSourceComponents() {
-            List<UIComponent> result = null;
+            List<UIComponent> result;
 
             // Find the src of the children
-            T modComp = getModComponent();
-            Object src = modComp.getSrc();
+            final T modComp = getModComponent();
+            final Object src = modComp.getSrc();
             if (src == null) {
                 // Use ModComp kids
 // https://java.net/jira/browse/JAVASERVERFACES-3332 / https://java.net/jira/browse/JAVASERVERFACES-3502
@@ -223,18 +213,17 @@ if (!replacedUIInstructions) {
     COMP_COMMANDS.fixUIInstructions(modComp, true);
     replacedUIInstructions = true;
 }
-                result = new ArrayList<UIComponent>(modComp.getChildren());
+                result = new ArrayList<>(modComp.getChildren());
             } else {
                 // resolve id to UIComponent and use it (single item List)
-                UIComponent srcComp = resolveComponent(src);
+                final UIComponent srcComp = resolveComponent(src);
                 if (srcComp == null) {
-                    throw new IllegalArgumentException(
-                            "Unable to find UIComponent specified by the 'src'"
+                    throw new IllegalArgumentException("Unable to find UIComponent specified by the 'src'"
                             + " attribute: '" + src + "'");
                 }
 
                 // Create an ArrayList and add it
-                result = new ArrayList<UIComponent>(1);
+                result = new ArrayList<>(1);
 // https://java.net/jira/browse/JAVASERVERFACES-3332 / https://java.net/jira/browse/JAVASERVERFACES-3502
 // NOTE: Instead of doing this here, do manually once for the entire page...
 if (!replacedUIInstructions) {
@@ -246,11 +235,6 @@ if (!replacedUIInstructions) {
 
             return result;
         }
-
-        protected static final ComponentCommands COMP_COMMANDS = ComponentCommands.getInstance();
-
-        private boolean replacedUIInstructions = false;
-        private T comp = null;
     }
 
     enum PropertyKeys {

@@ -7,30 +7,19 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Objects;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * <p> This class provides methods to help work with EL expressions.</p>
  */
 public class ELUtil {
-    private static final String TMP_BEAN            = "_tBn";
+    @Getter @Setter
     private static ELUtil       instance            = new ELUtil();
+    private static final String TMP_BEAN            = "_tBn";
 
     protected ELUtil() {
         // Prevent direct instantiation. Use getInstance()
-    }
-
-    /**
-     * <p> Provides access to the <code>ELUtil</code> singleton instance.</p>
-     */
-    public static ELUtil getInstance() {
-        return instance;
-    }
-    
-    /**
-     * <p> Set ELUtil instance.</p>
-     */
-    public static void setInstance(final ELUtil elUtil) {
-        instance =  elUtil;
     }
 
     /**

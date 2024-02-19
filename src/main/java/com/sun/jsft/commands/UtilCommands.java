@@ -145,7 +145,7 @@ public class UtilCommands {
         }
     }
 
-    /**
+    /*
      *  <p> This command gets the current system time in milliseconds.  It may
      *      be used to time things.</p>
     @Handler(id="getDate",
@@ -168,19 +168,16 @@ public class UtilCommands {
         return com.sun.jsft.util.Util.htmlEscape(value);
     }
 
-    /**
-     *  <p> A utility command that resembles the for() method in Java. Commands
-     *      inside the for loop will be executed in a loop.  The starting index
-     *      is specified by <code>start</code>.  The index will increase
-     *      sequentially untill it is equal to <code>end</code>.
-     *      <code>var</code> will be a request attribute that is set to the
-     *      current index value as the loop iterates.</p>
+    /*
+     *  <p> A utility command that resembles the for() method in Java. Commands inside the for loop will be executed
+     *      in a loop. The starting index is specified by <code>start</code>. The index will increase sequentially
+     *      until it is equal to {@code end}. {@code var} will be a request attribute that is set to the current index
+     *      value as the loop iterates.</p>
      *  <p> For example:</p>
      *
-     *  <code>forLoop(start="1"  end="3" var="foo") {...}</code>
+     *  <blockquote>forLoop(start="1"  end="3" var="foo") {...}</blockquote>
      *
-     *  <p>The commands inside the {...} will be executed 2 times
-     *     (with foo=1 and foo=2).</p>
+     *  <p> The commands inside the {...} will be executed 2 times (with foo=1 and foo=2).</p>
      *
      *  <ul><li><code>start</code> -- type: <code>Integer</code> Starting
      *          index, defaults to zero if not specified.</li>

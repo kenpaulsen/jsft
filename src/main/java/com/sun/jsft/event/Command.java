@@ -120,7 +120,7 @@ public abstract class Command implements Serializable {
      */
     @Override
     public String toString() {
-        StringBuilder buf = new StringBuilder();
+        final StringBuilder buf = new StringBuilder();
         if (childCommands != null) {
             buf.append("{\n");
             for (final Command childCmd : childCommands) {
@@ -133,7 +133,7 @@ public abstract class Command implements Serializable {
         return buf.toString();
     }
 
-    private void setChildCommands(List<Command> commands) {
+    private void setChildCommands(final List<Command> commands) {
         this.childCommands = commands;
     }
 
@@ -141,7 +141,7 @@ public abstract class Command implements Serializable {
      * <p> This setter method stores the command to be invoked if this
      *     command has an "else" clause.</p>
      */
-    private void setElseCommand(Command command) {
+    private void setElseCommand(final Command command) {
         this.elseCommand = command;
     }
 }

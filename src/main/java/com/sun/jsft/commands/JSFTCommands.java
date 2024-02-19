@@ -215,13 +215,10 @@ public class JSFTCommands {
     }
 
     /**
-     * <p> This command indicates to JSF that the request should proceed
-     *     immediately to the render response phase.  It will be ignored if
-     *     rendering has already begun.  This is useful if you want to stop
-     *     processing and jump to the response.  This is often the case when
-     *     an error occurs or validation fails.  Typically the page the user
-     *     is on will be reshown (although if navigation has already
-     *     occurred, the new page will be shown.</p>
+     * <p> This command indicates to JSF that the request should proceed immediately to the render response phase.
+     *     It will be ignored if rendering has already begun. This is useful if you want to stop processing and jump
+     *     to the response. This is often the case when an error occurs or validation fails. Typically the page the
+     *     user is on will be re-shown (although if navigation has already occurred, the new page will be shown.</p>
      */
     public void renderResponse() {
         FacesContext.getCurrentInstance().renderResponse();
@@ -238,7 +235,7 @@ public class JSFTCommands {
         final StringWriter strWriter = new StringWriter();
         new RuntimeException((msg == null) ? "" : msg).printStackTrace(new PrintWriter(strWriter));
         // Print it to stderr and return it
-        System.err.println(strWriter.toString());
+        System.err.println(strWriter);
     }
 
     /**
@@ -284,7 +281,7 @@ public class JSFTCommands {
         } else {
             root = ctx.getApplication().getViewHandler().
                     // Ensure we start w/ a '/'
-                    createView(ctx, (pageName.charAt(0) == '/') ? pageName : "" + pageName);
+                    createView(ctx, (pageName.charAt(0) == '/') ? pageName : "/" + pageName);
         }
         return root;
     }

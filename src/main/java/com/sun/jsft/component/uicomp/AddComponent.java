@@ -9,26 +9,33 @@ import java.util.List;
 
 
 /**
- *  <p> This component provides the functionality to add component(s) at the
- *      end of specified id's children.  Usage:</p>
- *
- *  <p> <code>
- *        &lt;jsft:addComponent id="foo" target="some:target:component"&gt;<br />
- *            &lt;component(s)ToAdd /&gt;<br />
- *        &lt;/jsft:addComponent&gt;<br />
- *      </code></p>
+ *  <p> This component provides the functionality to add component(s) at the end of specified id's children. Usage:</p>
+ *  <blockquote>
+ *      &lt;jsft:addComponent id="foo" target="some:target:component"&gt;<br />
+ *          &lt;component(s)ToAdd /&gt;<br />
+ *      &lt;/jsft:addComponent&gt;<br />
+ *  </blockquote>
  *
  *  <p> OR:</p>
  *
- *  <p> <code>
- *        &lt;jsft:addComponent id="foo" target="some:target:component" src="some:existing:component:to:add"
- *              before="true|false" /&gt;<br />
- *      </code></p>
+ *  <code>
+ *      &lt;jsft:addComponent id="foo" target="some:target:component" src="some:existing:component:to:add"
+ *          before="true|false" /&gt;<br />
+ *  </code>
  *
- *  <p> Note: Both <code>target</code> and <code>src</code> attributes may be absolute or relative ids, and they may
- *            also be a <code>UIComponent</code> object.</p>
+ *  <p> Note: Both {@code target} and {@code src} attributes may be absolute or relative ids, and they may also be
+ *      a {@code UIComponent} object.</p>
  */
 public class AddComponent extends InsertComponent {
+    /**
+     * <p> The component family.</p>
+     */
+    public static final String FAMILY        =   AddComponent.class.getName();
+
+    /**
+     * <p> Listener instance.</p>
+     */
+    private transient ComponentSystemEventListener compListener = null;
 
     /**
      * <p> This method returns the <code>ComponentSystemEventListener</code>
@@ -55,7 +62,7 @@ public class AddComponent extends InsertComponent {
      */
     public static class PreRenderViewListener extends ModComponentBase.PreRenderViewListenerBase<AddComponent> {
         /**
-         *  Constructor.  Do not use... for deserialization only.
+         *  Constructor. Do not use... for deserialization only.
          */
         public PreRenderViewListener() {
             this(null);
@@ -64,22 +71,22 @@ public class AddComponent extends InsertComponent {
         /**
          *  Constructor.
          */
-        public PreRenderViewListener(AddComponent comp) {
+        public PreRenderViewListener(final AddComponent comp) {
             super(comp);
         }
 
         /**
          *  <p>        Perform the move.</P>
          */
-        public void processEvent(ComponentSystemEvent event) throws AbortProcessingException {
-            AddComponent modComp = getModComponent();
+        public void processEvent(final ComponentSystemEvent event) throws AbortProcessingException {
+            final AddComponent modComp = getModComponent();
             if (modComp == null) {
                 // Here due to deserialization, ignore...
                 return;
             }
 
             // Get the component & srcKids
-            List<UIComponent> srcKids = getSourceComponents();
+            final List<UIComponent> srcKids = getSourceComponents();
             if (!srcKids.isEmpty()) {
                 boolean done = false;
 
@@ -92,7 +99,7 @@ public class AddComponent extends InsertComponent {
                 }
 
                 // Check to see if we want it at the beginning or the end...
-                List<UIComponent> targetKids = targetComp.getChildren();
+                final List<UIComponent> targetKids = targetComp.getChildren();
                 if (modComp.isBefore() && !targetKids.isEmpty()) {
                     // Really doing an insert before the 1st child of target...
                     // Get the 1st target kid
@@ -100,14 +107,14 @@ public class AddComponent extends InsertComponent {
 
                     // Get the 1st child and insert it before or after (rest
                     // srcKids will be inserted after this)
-                    Iterator<UIComponent> iter = srcKids.iterator();
-                    UIComponent newKid = iter.next();
+                    final Iterator<UIComponent> it = srcKids.iterator();
+                    UIComponent newKid = it.next();
                     COMP_COMMANDS.insertUIComponent(true, targetComp, newKid);
 
                     // Loop through remaining srcKids and insert after newKid
-                    while (iter.hasNext()) {
+                    while (it.hasNext()) {
                         targetComp = newKid;
-                        newKid = iter.next();
+                        newKid = it.next();
                         COMP_COMMANDS.insertUIComponentAfter(targetComp, newKid);
                     }
 
@@ -117,9 +124,8 @@ public class AddComponent extends InsertComponent {
 
                 if (!done) {
                     // Add Children to target...
-                    Iterator<UIComponent> iter = srcKids.iterator();
-                    while (iter.hasNext()) {
-                        COMP_COMMANDS.addUIComponent(targetComp, iter.next());
+                    for (UIComponent srcKid : srcKids) {
+                        COMP_COMMANDS.addUIComponent(targetComp, srcKid);
                     }
                 }
             }
@@ -128,14 +134,4 @@ public class AddComponent extends InsertComponent {
             super.processEvent(event);
         }
     }
-
-    /**
-     * <p> Listener instance.</p>
-     */
-    private transient ComponentSystemEventListener compListener = null;
-
-    /**
-     * <p> The component family.</p>
-     */
-    public static final String FAMILY        =   AddComponent.class.getName();
 }

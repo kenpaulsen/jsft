@@ -7,17 +7,23 @@ import jakarta.faces.event.ComponentSystemEventListener;
 
 /**
  * <p> This component provides the functionality to remove a component
- *     specified by the given <code>target</code>.  Target can be an
- *     <code>id</code> or the actual <code>UIComponent</code> to remove.</p>
+ *     specified by the given {@code target}.  Target can be an
+ *     {@code id} or the actual {@code UIComponent} to remove.</p>
  *
  *  <p> <code>
  *        &lt;jsft:removeComponent id="foo" target="target:component:to:remove" /&gt;<br />
  *      </code></p>
  */
 public class RemoveComponent extends ModComponentBase {
+    public static final String FAMILY = RemoveComponent.class.getName();
 
     /**
-     * <p> This method should return the <code>ComponentSystemEventListener</code> instance which performs
+     * <p> Listener instance.</p>
+     */
+    private transient ComponentSystemEventListener compListener = null;
+
+    /**
+     * <p> This method should return the {@code ComponentSystemEventListener} instance which performs
      *     the work done by this class.</p>
      */
     @Override
@@ -34,21 +40,19 @@ public class RemoveComponent extends ModComponentBase {
     }
 
     /**
-     * <p> Overriden to throw <code>UnsupportedOperationException</code>.</p>
+     * <p> Overridden to throw {@code UnsupportedOperationException}.</p>
      */
     @Override
     public String getSrc() {
-        throw new UnsupportedOperationException(
-                "The 'src' attribute is not valid for jsft:remove.");
+        throw new UnsupportedOperationException("The 'src' attribute is not valid for jsft:remove.");
     }
 
     /**
-     * <p> Overriden to throw <code>UnsupportedOperationException</code>.</p>
+     * <p> Overridden to throw {@code UnsupportedOperationException}.</p>
      */
     @Override
-    public void setSrc(Object src) {
-        throw new UnsupportedOperationException(
-                "The 'src' attribute is not valid for jsft:remove.");
+    public void setSrc(final Object src) {
+        throw new UnsupportedOperationException("The 'src' attribute is not valid for jsft:remove.");
     }
 
     /**
@@ -65,42 +69,29 @@ public class RemoveComponent extends ModComponentBase {
         /**
          *  Constructor.
          */
-        public PreRenderViewListener(RemoveComponent comp) {
+        public PreRenderViewListener(final RemoveComponent comp) {
             super(comp);
         }
 
         /**
          *  <p>        Perform the removal.</P>
          */
-        public void processEvent(ComponentSystemEvent event) throws AbortProcessingException {
-            RemoveComponent modComp = getModComponent();
+        public void processEvent(final ComponentSystemEvent event) throws AbortProcessingException {
+            final RemoveComponent modComp = getModComponent();
             if (modComp == null) {
                 // Here due to deserialization, ignore...
                 return;
             }
-
             // Find the target to remove
-            UIComponent targetComp = getTargetComponent();
+            final UIComponent targetComp = getTargetComponent();
             if (targetComp == null) {
                 // Do nothing...
                 return;
             }
-
             // Remove target
             COMP_COMMANDS.replaceUIComponent(targetComp, null);
-
             // This will remove this remove component...
             super.processEvent(event);
         }
     }
-
-    /**
-     * <p> The component family.</p>
-     */
-    public static final String FAMILY        =   RemoveComponent.class.getName();
-
-    /**
-     * <p> Listener instance.</p>
-     */
-    private transient ComponentSystemEventListener compListener = null;
 }

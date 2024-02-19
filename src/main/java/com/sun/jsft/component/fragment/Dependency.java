@@ -38,19 +38,30 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package com.sun.jsft.component.fragment;
 
 import jakarta.faces.event.SystemEventListener;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+import java.util.concurrent.ConcurrentHashMap;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * <p> This class holds the representation of a single dependency.</p>
  */
 public class Dependency {
+    /**
+     * <p> The default event type.</p>
+     */
+    public static final String DEFAULT_EVENT_TYPE   = DependencyEvent.DEPENDENCY_COMPLETE;
+
+    // Map of List to store the events by type
+    private final Map<String, List<SystemEventListener>> listenersByType = new ConcurrentHashMap<>(3);
+
+    // The identifier for this Dependency
+    @Getter @Setter
+    private String name = "";
 
     /**
      * <p> Default constructor.</p>
@@ -62,46 +73,16 @@ public class Dependency {
     /**
      * <p> Constructor w/ <code>name</code>.</p>
      */
-    public Dependency(String name) {
+    public Dependency(final String name) {
         this();
         this.name = name;
     }
 
-    /**
-     * <p> The name used to identify the dependency. In some case, the name may define the dependency (i.e. EL).</p>
-     */
-    public String getName() {
-        return name;
+    public List<SystemEventListener> getListeners(final String type) {
+        return listenersByType.get((type == null) ? DEFAULT_EVENT_TYPE : type);
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setListeners(final String type, final List<SystemEventListener> listeners) {
+        listenersByType.put((type == null) ? DEFAULT_EVENT_TYPE : type, listeners);
     }
-
-    public List<SystemEventListener> getListeners(String type) {
-        if (type == null) {
-            type = DEFAULT_EVENT_TYPE;
-        }
-        return listenersByType.get(type);
-    }
-
-    public void setListeners(String type, List<SystemEventListener> listeners) {
-        if (type == null) {
-            type = DEFAULT_EVENT_TYPE;
-        }
-        listenersByType.put(type, listeners);
-    }
-
-
-    // The identifier for this Dependency
-    private String name = "";
-
-    // Map of List to store the events by type
-    private Map<String, List<SystemEventListener>> listenersByType =
-            new HashMap<String, List<SystemEventListener>>(2);
-
-    /**
-     * <p> The default event type.</p>
-     */
-    public static final String DEFAULT_EVENT_TYPE   = DependencyEvent.DEPENDENCY_COMPLETE;
 }

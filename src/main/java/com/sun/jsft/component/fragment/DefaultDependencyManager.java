@@ -94,7 +94,7 @@ public class DefaultDependencyManager extends DependencyManager {
     /**
      * <p> This method is responsible for executing the queued Dependencies.  It is possible this method may be
      *     called more than once (not common), so care should be taken to ensure this is handled appropriately. This
-     *     method is normally executed after the page (excluding DefferedFragments, of course) have been rendered.</p>
+     *     method is normally executed after the page (excluding DeferredFragments, of course) have been rendered.</p>
      */
     public void start() {
         // Loop through the dependencies and execute them...

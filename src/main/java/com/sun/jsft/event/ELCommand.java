@@ -78,18 +78,17 @@ public class ELCommand extends Command {
      *
      * FIXME: Add more documentation on how this works...
      */
-    public ELCommand(String resultVar, String el, List<Command> childCommands, Command elseCommand) {
+    public ELCommand(final String resultVar, final String el,
+            final List<Command> childCommands, final Command elseCommand) {
         super(childCommands, elseCommand);
         this.resultVar = resultVar;
         this.el = el;
     }
 
     /**
-     * <p> This method is responsible for dispatching the event to the various
-     *     EL expressions that are listening to this event.  It also stores
-     *     the Event object in request scope under the key "theEvent" so that
-     *     it can be accessed easiliy via EL.  For example:
-     *     <code>util.println(theEvent);</code></p>
+     * <p> This method is responsible for dispatching the event to the various EL expressions that are listening to
+     *     this event. It also stores the Event object in request scope under the key "theEvent" so that it can be
+     *     accessed easily via EL. For example: <code>util.println(theEvent);</code></p>
      */
     public Object invoke() throws AbortProcessingException {
         // Get the FacesContext
@@ -112,8 +111,8 @@ public class ELCommand extends Command {
 
         // Create expression
         final ExpressionFactory fact = ctx.getApplication().getExpressionFactory();
-        Object result = null;
-        if (this.el.length() > 0) {
+        final Object result;
+        if (!this.el.isEmpty()) {
             // Get the value
             final ValueExpression ve =
                     fact.createValueExpression(elCtx, "#{" + this.el + "}", Object.class);
@@ -123,14 +122,15 @@ public class ELCommand extends Command {
             // If we should store the result... do it.
             if (this.resultVar != null) {
                 try {
-                    final ValueExpression leftVal =
-                            fact.createValueExpression(elCtx, "#{" + this.resultVar + "}", Object.class);
+                    final ValueExpression leftVal = fact.createValueExpression(elCtx,
+                            "#{" + this.resultVar + "}", Object.class);
                     leftVal.setValue(elCtx, result);
                 } catch (final RuntimeException ex) {
                     log.warn("Unable to set '" + resultVar + "' to '" + result + "'", ex);
                 }
             }
         } else {
+            result = null;
             // Do this since we have no command to execute (which is normally
             // responsible for doing this)
             invokeChildCommands();
